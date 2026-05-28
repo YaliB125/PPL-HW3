@@ -217,12 +217,48 @@ export const typeofLetrec = (exp: LetrecExp, tenv: TEnv): Result<TExp> => {
 //   (define (var : texp) val)
 //   If typeof(exp.val, tenv) = texp
 //   Then typeof(exp) = void
-export const typeofDefine = (exp: DefineExp, tenv: TEnv): Result<VoidTExp> =>
-    makeFailure("HW3 2.1 - Implement this function");
+export const typeofDefine = (exp: DefineExp, tenv: TEnv): Result<VoidTExp> =>{
+    const valTE = typeofExp(exp.val, tenv);
+        const constraint = bind(valTE, (computedValTE: TExp) =>
+            checkEqualType(computedValTE, exp.var.texp, exp));
+        return bind(constraint, (_:true) => makeOk(makeVoidTExp()));
+};
+
 
 // Purpose: compute the type of a program
 // Thread the TEnv through top-level expressions. A define extends the TEnv
 // for the expressions that follow it; the program type is the type of the
 // last expression.
-export const typeofProgram = (exp: Program, tenv: TEnv): Result<TExp> =>
-    makeFailure("HW3 2.2 - Implement this function");
+export const typeofProgram = (exp: Program, tenv: TEnv): Result<TExp> =>{
+
+    if (!isNonEmptyList<Exp>(exp.exps)) {
+        return makeFailure("Unexpected empty program");
+    }
+
+    const typeofProgramExps = (exps: NonEmptyList<Exp>, currentTEnv: TEnv): Result<TExp> => {
+        const firstExp = first(exps);
+        const restExps = rest(exps);
+
+        if (isEmpty(restExps)) {
+            return typeofExp(firstExp, currentTEnv);
+        }
+
+        if (isNonEmptyList<Exp>(restExps)) {
+            if (isDefineExp(firstExp)) {
+                const defineTE = typeofDefine(firstExp, currentTEnv);
+                return bind(defineTE, (_voidTE: VoidTExp) => {
+                    const extTEnv = makeExtendTEnv([firstExp.var.var], [firstExp.var.texp], currentTEnv);
+                    return typeofProgramExps(restExps, extTEnv);
+                });
+            } else {
+                const firstTE = typeofExp(firstExp, currentTEnv);
+                return bind(firstTE, (_te: TExp) => typeofProgramExps(restExps, currentTEnv));
+            }
+        }
+
+        return makeFailure("Unexpected empty sequence of expressions");
+    };
+
+    return typeofProgramExps(exp.exps, tenv);
+};
+    
