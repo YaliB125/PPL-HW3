@@ -1,4 +1,4 @@
-import { isNumExp, isBoolExp, isVarRef, isPrimOp, isProgram, isDefineExp, isVarDecl,
+import { Program, isNumExp, isBoolExp, isVarRef, isPrimOp, isProgram, isDefineExp, isVarDecl,
     isAppExp, isStrExp, isIfExp, isProcExp, isLetExp, isLitExp, isLetrecExp, isSetExp,
     parseL5Exp, unparse, Exp, parseL5 } from "../../src/L5/L5-ast";
 import { Result, bind, isFailure, isOk, isOkT, makeFailure, makeOk, mapv } from "../../src/shared/result";
