@@ -272,6 +272,7 @@ const matchTVarsInTE = <T1, T2>(te1: TExp, te2: TExp,
     (isTVar(te1) || isTVar(te2)) ? matchTVarsinTVars(tvarDeref(te1), tvarDeref(te2), succ, fail) :
     (isAtomicTExp(te1) || isAtomicTExp(te2)) ?
         ((isAtomicTExp(te1) && isAtomicTExp(te2) && eqAtomicTExp(te1, te2)) ? succ([]) : fail()) :
+    (isListTExp(te1) && isListTExp(te2)) ? matchTVarsInTE(te1.itemTE, te2.itemTE, succ, fail) :    
     matchTVarsInTProcs(te1, te2, succ, fail);
 
 // te1 and te2 are the result of tvarDeref

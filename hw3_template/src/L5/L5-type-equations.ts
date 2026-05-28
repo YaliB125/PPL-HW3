@@ -77,10 +77,9 @@ export const expToPool = (exp: A.Exp): Pool => {
     const findVars = (e: A.Exp, pool: Pool): Pool =>
         A.isAtomicExp(e) ? extendPool(e, pool) :
         A.isProcExp(e) ? extendPool(e, reducePool(findVars, e.body, reducePoolVarDecls(extendPoolVarDecl, e.args, pool))) :
-        A.isLitExp(e) && V.isEmptySExp(e.val) ?
-            pool : // HW3 3.3.a - fix this branch
+        A.isLitExp(e) && V.isEmptySExp(e.val) ? extendPool(e, pool) : 
         A.isLitExp(e) && V.isCompoundSExp(e.val) ?
-            pool : // HW3 3.3.a - fix this branch
+            extendPool(e, findVars(A.makeLitExp(e.val.val2), findVars(A.makeLitExp(e.val.val1), pool))) : 
         A.isCompoundExp(e) ? extendPool(e, reducePool(findVars, A.expComponents(e), pool)) :
         makeEmptyPool();
     return findVars(exp, makeEmptyPool());
