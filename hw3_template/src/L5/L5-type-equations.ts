@@ -138,9 +138,20 @@ export const makeEquationsFromExp = (exp: A.Exp, pool: Pool): Opt.Optional<Equat
                                 [makeEquation(left, T.makeProcTExp(R.map((vd) => vd. texp, exp.args), ret))])) :
     A.isLitExp(exp) ?
         (V.isEmptySExp(exp.val) ?
-            Opt.makeNone() : // HW3 3.3.b - fix this branch
+            Opt.mapv(inPool(pool, exp), (left: T.TExp) => 
+        [makeEquation(left, T.makeListTExp(T.makeFreshTVar()))]):
         V.isCompoundSExp(exp.val) ?
-            Opt.makeNone() : // HW3 3.3.b - fix this branch
+        (() => {
+            const compoundVal = exp.val; 
+            return Opt.bind(inPool(pool, exp), (listTE: T.TExp) =>
+                Opt.bind(inPool(pool, A.makeLitExp(compoundVal.val1)), (carTE: T.TExp) =>
+                    Opt.mapv(inPool(pool, A.makeLitExp(compoundVal.val2)), (cdrTE: T.TExp) => [
+                        makeEquation(listTE, T.makeListTExp(carTE)),
+                        makeEquation(cdrTE, T.makeListTExp(carTE))
+                    ])
+                )
+            );
+        })(): 
         isNumber(exp.val) ? Opt.mapv(inPool(pool, exp) , (left: T.TExp) =>
             [ makeEquation(left, T.makeNumTExp()) ]) :
         isBoolean(exp.val) ? Opt.mapv(inPool(pool, exp) , (left: T.TExp) =>
@@ -243,7 +254,8 @@ const solve = (equations: Equation[], sub: S.Sub): Res.Result<S.Sub> => {
 const canUnify = (eq: Equation): boolean =>
     T.isProcTExp(eq.left) && T.isProcTExp(eq.right) ?
         (eq.left.paramTEs.length === eq.right.paramTEs.length) :
-    // HW3 3.3.c - add missing branch
+    T.isListTExp(eq.left) && T.isListTExp(eq.right) ?
+        true :
     false;
 
 // Signature: splitEquation(equation)
@@ -261,5 +273,6 @@ const splitEquation = (eq: Equation): Equation[] =>
         R.zipWith(makeEquation,
                   cons(eq.left.returnTE, eq.left.paramTEs),
                   cons(eq.right.returnTE, eq.right.paramTEs)) :
-    // HW3 3.3.d - add missing branch
+    (T.isListTExp(eq.left) && T.isListTExp(eq.right)) ?
+        [ makeEquation(eq.left.itemTE, eq.right.itemTE) ] :
     [];
