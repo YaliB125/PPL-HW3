@@ -209,11 +209,6 @@ export const typeofLetrec = (exp: A.LetrecExp, tenv: E.TEnv): Result<T.TExp> => 
 //   (define (var : texp) val)
 // TODO - write the true definition
 export const typeofDefine = (exp: A.DefineExp, tenv: E.TEnv): Result<T.VoidTExp> => {
-    // return Error("TODO");
-    // const valTE = typeofExp(exp.val, tenv);
-    // const constraint = bind(valTE, (computedValTE: T.TExp) =>
-    //     checkEqualType(computedValTE, exp.var.texp, exp));
-    // return bind(constraint, (_:true) => makeOk(T.makeVoidTExp()));
     return makeFailure("TODO");
 };
 
