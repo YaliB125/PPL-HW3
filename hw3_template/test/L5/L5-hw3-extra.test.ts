@@ -16,17 +16,13 @@ const infer = (src: string): Optional<TExp> => {
 };
 
 describe('HW3 Extra Tests - Homogeneous Lists', () => {
-
-    // ========================================================
-    // 1. בדיקות עבור מנגנון הסובסטיטוציות ו-applySub
-    // ========================================================
     describe('Substitution ADT & applySub Extensions', () => {
         
         it('applySub - nested lists (list (list number))', () => {
             const sub1 = sub(["X"], ["number"]);
             const te1 = parseTE("(list (list X))");
             const unparsed = bind(sub1, (sub: S.Sub) =>
-                            mapv(te1, (te: TExp) => // <-- שינוי מ-bind ל-mapv
+                            mapv(te1, (te: TExp) => 
                                 S.applySub(sub, te)));
             
             expect(unparsed).toSatisfy(isOkT(isListTExp));
@@ -39,16 +35,13 @@ describe('HW3 Extra Tests - Homogeneous Lists', () => {
             const sub1 = sub(["X"], ["boolean"]);
             const te1 = parseTE("((list X) -> X)");
             const unparsed = bind(sub1, (sub: S.Sub) =>
-                            mapv(te1, (te: TExp) => // <-- שינוי מ-bind ל-mapv
+                            mapv(te1, (te: TExp) => 
                                 S.applySub(sub, te)));
             
             expect(unparsed.tag).toBe("Ok");
         });
     });
 
-    // ========================================================
-    // 2. בדיקות עבור שקילות של ביטויי טיפוס (equivalentTEs)
-    // ========================================================
     describe('equivalentTEs Extension for Lists', () => {
 
         it('identifies equivalent list type variables: (list T1) equivalent to (list T2)', () => {
@@ -74,26 +67,19 @@ describe('HW3 Extra Tests - Homogeneous Lists', () => {
         });
     });
 
-    // ========================================================
-    // 3. בדיקות עבור היקש טיפוסים מורכב יותר (Inference & Equations)
-    // ========================================================
     describe('Type Inference Cases', () => {
 
         it('infers (list (list number)) for nested list literals', () => {
-            // רשימה שמכילה רשימה: '((1 2))
             const t = infer("'((1 2))");
             expect(isSome(t) && isListTExp(t.value) && isListTExp(t.value.itemTE)).toBe(true);
         });
 
         it('infers correct type for empty list quote via type equations', () => {
             const t = infer("'()");
-            // מוודא שנוצר מבנה רשימה חוקי, גם אם טיפוס האיבר הוא TVar ריק כרגע
             expect(isSome(t) && isListTExp(t.value)).toBe(true);
         });
 
         it('fails inference or correctly constraints heterogeneous list errors', () => {
-            // בדיקה שאלגוריתם הצימוד מזהה שרשימה לא הומוגנית מפרה את המשוואות
-            // הערה: תלוי מימוש, אם השפה קורסת בצימוד או מחזירה None, אנחנו מוודאים שזה לא מחזיר טיפוס תקני
             const t = infer("(cons 1 '(#t #f))"); 
             expect(isSome(t)).toBe(false); 
         });
